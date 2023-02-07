@@ -1,0 +1,102 @@
+#!/usr/bin/env raku
+
+use ISP::dsmadmc;
+use Prettier::Table;
+
+use Data::Dump::Tree;
+
+my @field-names = [
+                    'Node Name',
+                    'Type',
+                    'Filespace Name',
+                    'FSID',
+                    'Source Objs',
+                    'Target Objs',
+                    'Pending Objs',
+                    'Target Server',
+                  ];
+
+sub MAIN (
+    Str:D   :$isp-server!,                          #= ISP server name
+    Str:D   :$isp-admin!,                           #= ISP server name
+    Str     :$node,                                 #= ISP NODE name or NODEGROUP
+    Int:D   :$interval      where * >= 10   = 58,   #= Refresh every --interval seconds (minimum 10s)
+    Int:D   :$count                         = 1,    #= Number of refreshes (0 is infinity)
+    Bool    :$grid,                                 #= Full table grid
+    Bool    :$clear,                                #= Clear the screen with each iteration
+) {
+    my $delay       = $interval;
+    my $counter     = $count;
+    my $infinity    = False;
+    if $counter == 0 {
+        $infinity   = True;
+        $counter++;
+    }
+    my @command         = ['QUERY', 'REPLNODE'];
+    if $node {
+        @command.push: $node;
+    }
+    else {
+        @command.push: '*';
+    }
+    my %align;
+    for @field-names -> $field-name {
+        given $field-name {
+            when    'FSID'  { %align{$field-name} = 'r' }
+            when    /Objs$/ { %align{$field-name} = 'r' }
+            default         { %align{$field-name} = 'l' }
+        }
+    }
+    my $dsmadmc         = ISP::dsmadmc.new(:$isp-server, :$isp-admin);
+    my $table;
+    repeat {
+        my @replnodes   = $dsmadmc.execute(@command);
+        die unless @replnodes.elems;
+        my Str $node-name;                                              #                            Node Name: P_SSSSSS
+        my Str $type;                                                   #                                 Type: Bkup
+        my Str $filespace;                                              #                       Filespace Name: /nfsmounts/P_SSSSSS
+        my Str $fsid;                                                   #                                 FSID: 1
+        my Int $source-objs;                                            # Objects on Source Replication Server: 440
+        my Int $target-objs;                                            # Objects on Target Replication Server: 436
+        my Int $pending-objs;                                           # *calculated*
+        my Str $target-server;                                          #            Target Replication Server: IIIIIIII05
+
+        $table = Prettier::Table.new:
+            title       => 'IBM Spectrum Protect: ' ~ $isp-server ~ ' Replication Nodes Summary [' ~ DateTime(now).local.hh-mm-ss ~ ']',
+            field-names => @field-names,
+            align       => %align,
+        ;
+        $table.hrules(Prettier::Table::Constrains::ALL) if $grid;
+
+        my $row;
+        for @replnodes -> $replnode {
+            $node-name          = Nil;  $node-name          = $replnode{'Node Name'}.Str                                                    if $replnode{'Node Name'};
+            $type               = Nil;  $type               = $replnode{'Type'}.Str                                                         if $replnode{'Type'};
+            $filespace          = Nil;  $filespace          = $replnode{'Filespace Name'}.Str                                               if $replnode{'Filespace Name'};
+            $fsid               = Nil;  $fsid               = $replnode{'FSID'}.Str                                                         if $replnode{'FSID'};
+            $source-objs        = 0;    $source-objs        = $replnode{'Objects on Source Replication Server'}.comb.grep(/\d/).join.Int    if $replnode{'Objects on Source Replication Server'};
+            $target-objs        = 0;    $target-objs        = $replnode{'Objects on Target Replication Server'}.comb.grep(/\d/).join.Int    if $replnode{'Objects on Target Replication Server'};
+            $pending-objs       = 0;    $pending-objs       = $source-objs - $target-objs                                                   if $source-objs;
+            $target-server      = Nil;  $target-server      = $replnode{'Target Replication Server'}.Str                                    if $replnode{'Target Replication Server'};
+            $row                = Array.new;
+            $row.push:          $node-name;
+            $row.push:          $type;
+            $row.push:          $filespace;
+            $row.push:          $fsid;
+#           $row.push:          $source-objs.Str.subst: :0continue, :1st, / <[1..9]> <[0..9]>* /, *.flip.comb(/<{ ".**1..3" }>/).join(",").flip;
+#           $row.push:          $target-objs.Str.subst: :0continue, :1st, / <[1..9]> <[0..9]>* /, *.flip.comb(/<{ ".**1..3" }>/).join(",").flip;
+#           $row.push:          $pending-objs.Str.subst: :0continue, :1st, / <[1..9]> <[0..9]>* /, *.flip.comb(/<{ ".**1..3" }>/).join(",").flip;
+            $row.push:          $source-objs.Str.flip.comb(3).join(',').flip;
+            $row.push:          $target-objs.Str.flip.comb(3).join(',').flip;
+            $row.push:          $pending-objs.Str.flip.comb(3).join(',').flip;
+            $row.push:          $target-server;
+            $table.add-row:     $row;
+        }
+        run '/usr/bin/clear'    if $clear;
+        put $table;
+        --$counter              unless $infinity;
+        sleep $interval         if $interval && $counter;
+    } until $counter < 1;
+}
+
+=finish

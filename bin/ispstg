@@ -1,0 +1,80 @@
+#!/usr/bin/env raku
+
+use ISP::Server::Reporter;
+
+class Reporter does ISP::Server::Reporter {
+
+    method process-rows (@replnodes) {
+        my Str $node-name;                                  #                            Node Name: P_SSSSSS
+        my Str $type;                                       #                                 Type: Bkup
+        my Str $filespace;                                  #                       Filespace Name: /nfsmounts/P_SSSSSS
+        my Str $fsid;                                       #                                 FSID: 1
+        my Int $source-objs;                                # Objects on Source Replication Server: 440
+        my Int $target-objs;                                # Objects on Target Replication Server: 436
+        my Int $pending-objs;                               # *calculated*
+        my Str $target-server;                              #            Target Replication Server: IIIIIIII05
+
+        my $row;
+        for @replnodes -> $replnode {
+            $node-name          = Nil;  $node-name          = $replnode{'Node Name'}.Str                                                    if $replnode{'Node Name'};
+            $type               = Nil;  $type               = $replnode{'Type'}.Str                                                         if $replnode{'Type'};
+            $filespace          = Nil;  $filespace          = $replnode{'Filespace Name'}.Str                                               if $replnode{'Filespace Name'};
+            $fsid               = Nil;  $fsid               = $replnode{'FSID'}.Str                                                         if $replnode{'FSID'};
+            $source-objs        = 0;    $source-objs        = $replnode{'Objects on Source Replication Server'}.comb.grep(/\d/).join.Int    if $replnode{'Objects on Source Replication Server'};
+            $target-objs        = 0;    $target-objs        = $replnode{'Objects on Target Replication Server'}.comb.grep(/\d/).join.Int    if $replnode{'Objects on Target Replication Server'};
+            $pending-objs       = 0;    $pending-objs       = $source-objs - $target-objs                                                   if $source-objs;
+            $target-server      = Nil;  $target-server      = $replnode{'Target Replication Server'}.Str                                    if $replnode{'Target Replication Server'};
+            $row                = Array.new;
+            $row.push:          $node-name;
+            $row.push:          $type;
+            $row.push:          $filespace;
+            $row.push:          $fsid;
+            $row.push:          $source-objs.Str.flip.comb(3).join(',').flip;
+            $row.push:          $target-objs.Str.flip.comb(3).join(',').flip;
+            $row.push:          $pending-objs.Str.flip.comb(3).join(',').flip;
+            $row.push:          $target-server;
+            self.table.add-row: $row;
+        }
+    }
+}
+
+sub MAIN (
+    Str:D   :$isp-server!,                          #= ISP server name
+    Str:D   :$isp-admin!,                           #= ISP server name
+    Int:D   :$interval      where * >= 5    = 58,   #= Refresh every --interval seconds (minimum 10s)
+    Int:D   :$count                         = 1,    #= Number of refreshes (0 is infinity)
+    Bool    :$grid,                                 #= Full table grid
+    Bool    :$clear,                                #= Clear the screen with each iteration
+    Str     :$node,                                 #= ISP NODE name or NODEGROUP
+) {
+    my @command         = ['QUERY', 'REPLNODE'];
+    if $node {
+        @command.push: $node;
+    }
+    else {
+        @command.push: '*';
+    }
+    my @fields;
+    @fields.push:   ISP::Server::Reporter::Field.new(:name('Node Name'),        :alignment('l'));
+    @fields.push:   ISP::Server::Reporter::Field.new(:name('Type'),             :alignment('l'));
+    @fields.push:   ISP::Server::Reporter::Field.new(:name('Filespace Name'),   :alignment('l'));
+    @fields.push:   ISP::Server::Reporter::Field.new(:name('FSID'),             :alignment('r'));
+    @fields.push:   ISP::Server::Reporter::Field.new(:name('Source Objs'),      :alignment('r'));
+    @fields.push:   ISP::Server::Reporter::Field.new(:name('Target Objs'),      :alignment('r'));
+    @fields.push:   ISP::Server::Reporter::Field.new(:name('Pending Objs'),     :alignment('r'));
+    @fields.push:   ISP::Server::Reporter::Field.new(:name('Target Server'),    :alignment('l'));
+    my $reporter    = Reporter.new(
+                                    :$isp-server,
+                                    :$isp-admin,
+                                    :$count,
+                                    :$grid,
+                                    :$clear,
+                                    :$interval,
+                                    :title('IBM Spectrum Protect: ' ~ $isp-server ~ ' Sessions'),
+                                    :@command,
+                                    :@fields,
+                                  );
+    $reporter.loop;
+}
+
+=finish
