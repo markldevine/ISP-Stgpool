@@ -2,92 +2,116 @@
 
 use ISP::Server::Reporter;
 
+my regex date-time-regex    {
+                                ^
+                                $<month>        = (\d\d)
+                                '/'
+                                $<day-of-month> = (\d\d)
+                                '/'
+                                $<year>         = (\d+)
+                                \s+
+                                $<hour>         = (\d\d)
+                                ':'
+                                $<minute>       = (\d\d)
+                                ':'
+                                $<second>       = (\d\d)
+                                $
+                            }
+
 class Reporter does ISP::Server::Reporter {
 
     method process-rows (@replnodes) {
-        my Str $storage-pool-name                       #                      Storage Pool Name: NFS_DC
-        my Str $storage-pool-type                       #                      Storage Pool Type: Primary
-        my Str $device-class-name                       #                      Device Class Name: 
-        my Str $storage-type                            #                           Storage Type: DIRECTORY
-        my Str $connection-name                         #                        Connection Name: 
-        my Str $cloud-storage-class                     #                    Cloud Storage Class: 
-        my Str $estimated-capacity                      #                     Estimated Capacity: 40,914 G
-        my Str $space-trigger-util                      #                     Space Trigger Util: 
-        my Str $pct-util                                #                               Pct Util: 19.6
-        my Str $pct-migr                                #                               Pct Migr: 
-        my Str $pct-logical                             #                            Pct Logical: 
-        my Str $high-mig-pct                            #                           High Mig Pct: 
-        my Str $low-mig-pct                             #                            Low Mig Pct: 
-        my Str $migration-delay                         #                        Migration Delay: 
-        my Str $migration-continue                      #                     Migration Continue: 
-        my Str $migration-processes                     #                    Migration Processes: 
-        my Str $reclamation-processes                   #                  Reclamation Processes: 
-        my Str $next-storage-pool                       #                      Next Storage Pool: 
-        my Str $reclaim-storage-pool                    #                   Reclaim Storage Pool: 
-        my Str $maximum-size-threshold                  #                 Maximum Size Threshold: No Limit
-        my Str $access                                  #                                 Access: Read/Write
-        my Str $description                             #                            Description: 
-        my Str $overflow-location                       #                      Overflow Location: 
-        my Str $cache-migrated-files                    #                  Cache Migrated Files?: 
-        my Str $collocate?                              #                             Collocate?: 
-        my Str $reclamation-threshold                   #                  Reclamation Threshold: 
+        my Str $storage-pool-name;                      #                      Storage Pool Name: NFS_DC
+        my Str $storage-pool-type;                      #                      Storage Pool Type: Primary
+        my Str $device-class-name;                      #                      Device Class Name: 
+        my Str $storage-type;                           #                           Storage Type: DIRECTORY
+        my Str $connection-name;                        #                        Connection Name: 
+        my Str $cloud-storage-class;                    #                    Cloud Storage Class: 
+        my Str $estimated-capacity;                     #                     Estimated Capacity: 40,914 G
+        my Str $space-trigger-util;                     #                     Space Trigger Util: 
+        my Str $pct-util;                               #                               Pct Util: 19.6
+        my Str $pct-migr;                               #                               Pct Migr: 
+        my Str $pct-logical;                            #                            Pct Logical: 
+        my Str $high-mig-pct;                           #                           High Mig Pct: 
+        my Str $low-mig-pct;                            #                            Low Mig Pct: 
+        my Str $migration-delay;                        #                        Migration Delay: 
+        my Str $migration-continue;                     #                     Migration Continue: 
+        my Str $migration-processes;                    #                    Migration Processes: 
+        my Str $reclamation-processes;                  #                  Reclamation Processes: 
+        my Str $next-storage-pool;                      #                      Next Storage Pool: 
+        my Str $reclaim-storage-pool;                   #                   Reclaim Storage Pool: 
+        my Str $maximum-size-threshold;                 #                 Maximum Size Threshold: No Limit
+        my Str $access;                                 #                                 Access: Read/Write
+        my Str $description;                            #                            Description: 
+        my Str $overflow-location;                      #                      Overflow Location: 
+        my Str $cache-migrated-files;                   #                  Cache Migrated Files?: 
+        my Str $collocate                               #                             Collocate?: 
+        my Str $reclamation-threshold;                  #                  Reclamation Threshold: 
         my Str $offsite-reclamation-limit               #              Offsite Reclamation Limit: 
-        my Str $maximum-scratch-volumes-allowed         #        Maximum Scratch Volumes Allowed: 
-        my Str $number-of-scratch-volumes-used          #         Number of Scratch Volumes Used: 
-        my Str $delay-period-for-container-reuse        #       Delay Period for Container Reuse: 1
-        my Str $migration-in-progress                   #                 Migration in Progress?: 
-        my Str $amount-migrated-mb                      #                   Amount Migrated (MB): 
-        my Str $elapsed-migration-time-seconds          #       Elapsed Migration Time (seconds): 
-        my Str $reclamation-in-progress                 #               Reclamation in Progress?: 
-        my Str $last-update-by-administrator            #         Last Update by (administrator): A028441
-        my Str $last-update-date-time                   #                  Last Update Date/Time: 02/01/23   11:11:15
-        my Str $storage-pool-data-format                #               Storage Pool Data Format: Native
-        my Str $copy-storage-pools                      #                   Copy Storage Pool(s): 
-        my Str $active-data-pools                       #                    Active Data Pool(s): 
-        my Str $continue-copy-on-error                  #                Continue Copy on Error?: 
-        my Str $crc-data                                #                               CRC Data: No
-        my Str $reclamation-type                        #                       Reclamation Type: 
-        my Str $overwrite-data-when-deleted             #            Overwrite Data when Deleted: 
-        my Str $compressed                              #                             Compressed: Yes
-        my Str $compression-savings                     #                    Compression Savings: 1,117 G (12.22%)
-        my Str $deduplicate-data                        #                      Deduplicate Data?: Yes
-        my Str $processes-for-identifying-duplicates    #   Processes For Identifying Duplicates: 
-        my Str $space-used-for-protected-data           #          Space Used for Protected Data: 
-        my Str $total-pending-space                     #                    Total Pending Space: 176,435 K 
-        my Str $deduplication-savings                   #                  Deduplication Savings: 4,590 G (33.43%)
-        my Str $total-space-saved                       #                      Total Space Saved: 5,707 G (41.56%)
-        my Str $auto-copy-mode                          #                         Auto-copy Mode: 
-        my Str $contains-data-deduplicated-by-client    #  Contains Data Deduplicated by Client?: 
-        my Str $maximum-simultaneous-writers            #           Maximum Simultaneous Writers: No Limit
-        my Str $protect-processes                       #                      Protect Processes: 
-        my Str $protection-storage-pool                 #                Protection Storage Pool: 
-        my Str $protect-local-storage-pools             #          Protect Local Storage Pool(s): 
-        my Str $reclamation-volume-limit                #               Reclamation Volume Limit: 
-        my Str $date-of-last-protection-to-remote-pool  # Date of Last Protection to Remote Pool: 
-        my Str $date-of-last-protection-to-local-pool   #  Date of Last Protection to Local Pool: 
-        my Str $deduplicate-requires-backup             #           Deduplicate Requires Backup?: 
-        my Str $encrypted                               #                              Encrypted: No
-        my Str $pct-encrypted                           #                          Pct Encrypted: 0.0
-        my Str $cloud-space-allocated-mb                #             Cloud Space Allocated (MB): 
-        my Str $cloud-space-utilized-mb                 #              Cloud Space Utilized (MB): 
-        my Str $local-estimated-capacity                #               Local Estimated Capacity: 
-        my Str $local-pct-util                          #                         Local Pct Util: 
-        my Str $local-pct-logical                       #                      Local Pct Logical: 
-        my Str $remove-restored-cpy-before-end-of-life  # Remove Restored Cpy Before End of Life: 
-        my Str $cloud-read-cache                        #                       Cloud Read Cache: 
-        my Str $cloud-data-locking                      #                     Cloud Data Locking: 
-        my Str $cloud-data-lock-duration-days           #        Cloud Data Lock Duration (Days): 
+        my Str $maximum-scratch-volumes-allowed;        #        Maximum Scratch Volumes Allowed: 
+        my Str $number-of-scratch-volumes-used;         #         Number of Scratch Volumes Used: 
+        my Str $delay-period-for-container-reuse;       #       Delay Period for Container Reuse: 1
+        my Str $migration-in-progress;                  #                 Migration in Progress?: 
+        my Str $amount-migrated-mb;                     #                   Amount Migrated (MB): 
+        my Str $elapsed-migration-time-seconds;         #       Elapsed Migration Time (seconds): 
+        my Str $reclamation-in-progress;                #               Reclamation in Progress?: 
+        my Str $last-update-by-administrator;           #         Last Update by (administrator): A028441
+        my Str $last-update-date-time;                  #                  Last Update Date/Time: 02/01/23   11:11:15
+        my Str $storage-pool-data-format;               #               Storage Pool Data Format: Native
+        my Str $copy-storage-pools;                     #                   Copy Storage Pool(s): 
+        my Str $active-data-pools;                      #                    Active Data Pool(s): 
+        my Str $continue-copy-on-error;                 #                Continue Copy on Error?: 
+        my Str $crc-data;                               #                               CRC Data: No
+        my Str $reclamation-type;                       #                       Reclamation Type: 
+        my Str $overwrite-data-when-deleted;            #            Overwrite Data when Deleted: 
+        my Str $compressed;                             #                             Compressed: Yes
+        my Str $compression-savings;                    #                    Compression Savings: 1,117 G (12.22%)
+        my Str $deduplicate-data;                       #                      Deduplicate Data?: Yes
+        my Str $processes-for-identifying-duplicates;   #   Processes For Identifying Duplicates: 
+        my Str $space-used-for-protected-data;          #          Space Used for Protected Data: 
+        my Str $total-pending-space;                    #                    Total Pending Space: 176,435 K 
+        my Str $deduplication-savings;                  #                  Deduplication Savings: 4,590 G (33.43%)
+        my Str $total-space-saved;                      #                      Total Space Saved: 5,707 G (41.56%)
+        my Str $auto-copy-mode;                         #                         Auto-copy Mode: 
+        my Str $contains-data-deduplicated-by-client;   #  Contains Data Deduplicated by Client?: 
+        my Str $maximum-simultaneous-writers;           #           Maximum Simultaneous Writers: No Limit
+        my Str $protect-processes;                      #                      Protect Processes: 
+        my Str $protection-storage-pool;                #                Protection Storage Pool: 
+        my Str $protect-local-storage-pools;            #          Protect Local Storage Pool(s): 
+        my Str $reclamation-volume-limit;               #               Reclamation Volume Limit: 
+        my Str $date-of-last-protection-to-remote-pool; # Date of Last Protection to Remote Pool: 
+        my Str $date-of-last-protection-to-local-pool;  #  Date of Last Protection to Local Pool: 
+        my Str $deduplicate-requires-backup;            #           Deduplicate Requires Backup?: 
+        my Str $encrypted;                              #                              Encrypted: No
+        my Str $pct-encrypted;                          #                          Pct Encrypted: 0.0
+        my Str $cloud-space-allocated-mb;               #             Cloud Space Allocated (MB): 
+        my Str $cloud-space-utilized-mb;                #              Cloud Space Utilized (MB): 
+        my Str $local-estimated-capacity;               #               Local Estimated Capacity: 
+        my Str $local-pct-util;                         #                         Local Pct Util: 
+        my Str $local-pct-logical;                      #                      Local Pct Logical: 
+        my Str $remove-restored-cpy-before-end-of-life; # Remove Restored Cpy Before End of Life: 
+        my Str $cloud-read-cache;                       #                       Cloud Read Cache: 
+        my Str $cloud-data-locking;                     #                     Cloud Data Locking: 
+        my Str $cloud-data-lock-duration-days;          #        Cloud Data Lock Duration (Days): 
 
         my $row;
         for @replnodes -> $replnode {
-            $node-name          = Nil;  $node-name          = $replnode{'Node Name'}.Str                                                    if $replnode{'Node Name'};
-            $type               = Nil;  $type               = $replnode{'Type'}.Str                                                         if $replnode{'Type'};
-            $filespace          = Nil;  $filespace          = $replnode{'Filespace Name'}.Str                                               if $replnode{'Filespace Name'};
-            $fsid               = Nil;  $fsid               = $replnode{'FSID'}.Str                                                         if $replnode{'FSID'};
+
+            $type                   = Nil;  $type               = $replnode{'Type'}.Str                                                         if $replnode{'Type'};
+            $scheduled-start        = Nil;
+            if $event{'Scheduled Start'} && $event{'Scheduled Start'} ~~ /<date-time-regex>/ {
+                $scheduled-start    = DateTime.new(
+                                                    :month($<date-time-regex><month>),
+                                                    :day($<date-time-regex><day-of-month>),
+                                                    :year($<date-time-regex><year> < 100 ?? +$<date-time-regex><year> + 2000 !! +$<date-time-regex><year>),
+                                                    :hour($<date-time-regex><hour>),
+                                                    :minute($<date-time-regex><minute>),
+                                                    :second($<date-time-regex><second>),
+                                                );
+            }
             $source-objs        = 0;    $source-objs        = $replnode{'Objects on Source Replication Server'}.comb.grep(/\d/).join.Int    if $replnode{'Objects on Source Replication Server'};
-            $target-objs        = 0;    $target-objs        = $replnode{'Objects on Target Replication Server'}.comb.grep(/\d/).join.Int    if $replnode{'Objects on Target Replication Server'};
-            $pending-objs       = 0;    $pending-objs       = $source-objs - $target-objs                                                   if $source-objs;
-            $target-server      = Nil;  $target-server      = $replnode{'Target Replication Server'}.Str                                    if $replnode{'Target Replication Server'};
+
+
             $row                = Array.new;
             $row.push:          $node-name;
             $row.push:          $type;
@@ -127,6 +151,78 @@ sub MAIN (
     @fields.push:   ISP::Server::Reporter::Field.new(:name('Target Objs'),      :alignment('r'));
     @fields.push:   ISP::Server::Reporter::Field.new(:name('Pending Objs'),     :alignment('r'));
     @fields.push:   ISP::Server::Reporter::Field.new(:name('Target Server'),    :alignment('l'));
+        my Str $storage-pool-name;                      #                      Storage Pool Name: NFS_DC
+        my Str $storage-pool-type;                      #                      Storage Pool Type: Primary
+        my Str $device-class-name;                      #                      Device Class Name: 
+        my Str $storage-type;                           #                           Storage Type: DIRECTORY
+        my Str $connection-name;                        #                        Connection Name: 
+        my Str $cloud-storage-class;                    #                    Cloud Storage Class: 
+        my Str $estimated-capacity;                     #                     Estimated Capacity: 40,914 G
+        my Str $space-trigger-util;                     #                     Space Trigger Util: 
+        my Str $pct-util;                               #                               Pct Util: 19.6
+        my Str $pct-migr;                               #                               Pct Migr: 
+        my Str $pct-logical;                            #                            Pct Logical: 
+        my Str $high-mig-pct;                           #                           High Mig Pct: 
+        my Str $low-mig-pct;                            #                            Low Mig Pct: 
+        my Str $migration-delay;                        #                        Migration Delay: 
+        my Str $migration-continue;                     #                     Migration Continue: 
+        my Str $migration-processes;                    #                    Migration Processes: 
+        my Str $reclamation-processes;                  #                  Reclamation Processes: 
+        my Str $next-storage-pool;                      #                      Next Storage Pool: 
+        my Str $reclaim-storage-pool;                   #                   Reclaim Storage Pool: 
+        my Str $maximum-size-threshold;                 #                 Maximum Size Threshold: No Limit
+        my Str $access;                                 #                                 Access: Read/Write
+        my Str $description;                            #                            Description: 
+        my Str $overflow-location;                      #                      Overflow Location: 
+        my Str $cache-migrated-files;                   #                  Cache Migrated Files?: 
+        my Str $collocate                               #                             Collocate?: 
+        my Str $reclamation-threshold;                  #                  Reclamation Threshold: 
+        my Str $offsite-reclamation-limit               #              Offsite Reclamation Limit: 
+        my Str $maximum-scratch-volumes-allowed;        #        Maximum Scratch Volumes Allowed: 
+        my Str $number-of-scratch-volumes-used;         #         Number of Scratch Volumes Used: 
+        my Str $delay-period-for-container-reuse;       #       Delay Period for Container Reuse: 1
+        my Str $migration-in-progress;                  #                 Migration in Progress?: 
+        my Str $amount-migrated-mb;                     #                   Amount Migrated (MB): 
+        my Str $elapsed-migration-time-seconds;         #       Elapsed Migration Time (seconds): 
+        my Str $reclamation-in-progress;                #               Reclamation in Progress?: 
+        my Str $last-update-by-administrator;           #         Last Update by (administrator): A028441
+        my Str $last-update-date-time;                  #                  Last Update Date/Time: 02/01/23   11:11:15
+        my Str $storage-pool-data-format;               #               Storage Pool Data Format: Native
+        my Str $copy-storage-pools;                     #                   Copy Storage Pool(s): 
+        my Str $active-data-pools;                      #                    Active Data Pool(s): 
+        my Str $continue-copy-on-error;                 #                Continue Copy on Error?: 
+        my Str $crc-data;                               #                               CRC Data: No
+        my Str $reclamation-type;                       #                       Reclamation Type: 
+        my Str $overwrite-data-when-deleted;            #            Overwrite Data when Deleted: 
+        my Str $compressed;                             #                             Compressed: Yes
+        my Str $compression-savings;                    #                    Compression Savings: 1,117 G (12.22%)
+        my Str $deduplicate-data;                       #                      Deduplicate Data?: Yes
+        my Str $processes-for-identifying-duplicates;   #   Processes For Identifying Duplicates: 
+        my Str $space-used-for-protected-data;          #          Space Used for Protected Data: 
+        my Str $total-pending-space;                    #                    Total Pending Space: 176,435 K 
+        my Str $deduplication-savings;                  #                  Deduplication Savings: 4,590 G (33.43%)
+        my Str $total-space-saved;                      #                      Total Space Saved: 5,707 G (41.56%)
+        my Str $auto-copy-mode;                         #                         Auto-copy Mode: 
+        my Str $contains-data-deduplicated-by-client;   #  Contains Data Deduplicated by Client?: 
+        my Str $maximum-simultaneous-writers;           #           Maximum Simultaneous Writers: No Limit
+        my Str $protect-processes;                      #                      Protect Processes: 
+        my Str $protection-storage-pool;                #                Protection Storage Pool: 
+        my Str $protect-local-storage-pools;            #          Protect Local Storage Pool(s): 
+        my Str $reclamation-volume-limit;               #               Reclamation Volume Limit: 
+        my Str $date-of-last-protection-to-remote-pool; # Date of Last Protection to Remote Pool: 
+        my Str $date-of-last-protection-to-local-pool;  #  Date of Last Protection to Local Pool: 
+        my Str $deduplicate-requires-backup;            #           Deduplicate Requires Backup?: 
+        my Str $encrypted;                              #                              Encrypted: No
+        my Str $pct-encrypted;                          #                          Pct Encrypted: 0.0
+        my Str $cloud-space-allocated-mb;               #             Cloud Space Allocated (MB): 
+        my Str $cloud-space-utilized-mb;                #              Cloud Space Utilized (MB): 
+        my Str $local-estimated-capacity;               #               Local Estimated Capacity: 
+        my Str $local-pct-util;                         #                         Local Pct Util: 
+        my Str $local-pct-logical;                      #                      Local Pct Logical: 
+        my Str $remove-restored-cpy-before-end-of-life; # Remove Restored Cpy Before End of Life: 
+        my Str $cloud-read-cache;                       #                       Cloud Read Cache: 
+        my Str $cloud-data-locking;                     #                     Cloud Data Locking: 
+        my Str $cloud-data-lock-duration-days;          #        Cloud Data Lock Duration (Days): 
     my $reporter    = Reporter.new(
                                     :$isp-server,
                                     :$isp-admin,
