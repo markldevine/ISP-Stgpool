@@ -182,18 +182,17 @@ class Reporter does ISP::Server::Reporter {
             $cloud-data-lock-duration-days          = Nil;  $cloud-data-lock-duration-days          = $stgpool{'Cloud Data Lock Duration (Days)'}.Str           if $stgpool{'Cloud Data Lock Duration (Days)'};
 
 
-#           $source-objs        = 0;    $source-objs        = $replnode{'Objects on Source Replication Server'}.comb.grep(/\d/).join.Int    if $replnode{'Objects on Source Replication Server'};
-
+#%%%        $source-objs        = 0;    $source-objs        = $replnode{'Objects on Source Replication Server'}.comb.grep(/\d/).join.Int    if $replnode{'Objects on Source Replication Server'};
 
             $row                = Array.new;
-            $row.push:          $node-name;
-            $row.push:          $type;
-            $row.push:          $filespace;
-            $row.push:          $fsid;
-            $row.push:          $source-objs.Str.flip.comb(3).join(',').flip;
-            $row.push:          $target-objs.Str.flip.comb(3).join(',').flip;
-            $row.push:          $pending-objs.Str.flip.comb(3).join(',').flip;
-            $row.push:          $target-server;
+#           $row.push:          $node-name;
+#           $row.push:          $type;
+#           $row.push:          $filespace;
+#           $row.push:          $fsid;
+#           $row.push:          $source-objs.Str.flip.comb(3).join(',').flip;
+#           $row.push:          $target-objs.Str.flip.comb(3).join(',').flip;
+#           $row.push:          $pending-objs.Str.flip.comb(3).join(',').flip;
+#           $row.push:          $target-server;
             self.table.add-row: $row;
         }
     }
