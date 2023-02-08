@@ -20,7 +20,7 @@ my regex date-time-regex    {
 
 class Reporter does ISP::Server::Reporter {
 
-    method process-rows (@replnodes) {
+    method process-rows (@stgpools) {
         my Str $storage-pool-name;                      #                      Storage Pool Name: NFS_DC
         my Str $storage-pool-type;                      #                      Storage Pool Type: Primary
         my Str $device-class-name;                      #                      Device Class Name: 
@@ -93,23 +93,96 @@ class Reporter does ISP::Server::Reporter {
         my Str $cloud-read-cache;                       #                       Cloud Read Cache: 
         my Str $cloud-data-locking;                     #                     Cloud Data Locking: 
         my Str $cloud-data-lock-duration-days;          #        Cloud Data Lock Duration (Days): 
-
         my $row;
-        for @replnodes -> $replnode {
-
-            $type                   = Nil;  $type               = $replnode{'Type'}.Str                                                         if $replnode{'Type'};
-            $scheduled-start        = Nil;
-            if $event{'Scheduled Start'} && $event{'Scheduled Start'} ~~ /<date-time-regex>/ {
-                $scheduled-start    = DateTime.new(
-                                                    :month($<date-time-regex><month>),
-                                                    :day($<date-time-regex><day-of-month>),
-                                                    :year($<date-time-regex><year> < 100 ?? +$<date-time-regex><year> + 2000 !! +$<date-time-regex><year>),
-                                                    :hour($<date-time-regex><hour>),
-                                                    :minute($<date-time-regex><minute>),
-                                                    :second($<date-time-regex><second>),
-                                                );
+        for @stgpools -> $stgpool {
+            $storage-pool-name                      = Nil;  $storage-pool-name                      = $stgpool{'Storage Pool Name'}.Str                         if $stgpool{'Storage Pool Name'};
+            $storage-pool-type                      = Nil;  $storage-pool-type                      = $stgpool{'Storage Pool Type'}.Str                         if $stgpool{'Storage Pool Type'};
+            $device-class-name                      = Nil;  $device-class-name                      = $stgpool{'Device Class Name'}.Str                         if $stgpool{'Device Class Name'};
+            $storage-type                           = Nil;  $storage-type                           = $stgpool{'Storage Type'}.Str                              if $stgpool{'Storage Type'};
+            $connection-name                        = Nil;  $connection-name                        = $stgpool{'Connection Name'}.Str                           if $stgpool{'Connection Name'};
+            $cloud-storage-class                    = Nil;  $cloud-storage-class                    = $stgpool{'Cloud Storage Class'}.Str                       if $stgpool{'Cloud Storage Class'};
+            $estimated-capacity                     = Nil;  $estimated-capacity                     = $stgpool{'Estimated Capacity'}.Str                        if $stgpool{'Estimated Capacity'};
+            $space-trigger-util                     = Nil;  $space-trigger-util                     = $stgpool{'Space Trigger Util'}.Str                        if $stgpool{'Space Trigger Util'};
+            $pct-util                               = Nil;  $pct-util                               = $stgpool{'Pct Util'}.Str                                  if $stgpool{'Pct Util'};
+            $pct-migr                               = Nil;  $pct-migr                               = $stgpool{'Pct Migr'}.Str                                  if $stgpool{'Pct Migr'};
+            $pct-logical                            = Nil;  $pct-logical                            = $stgpool{'Pct Logical'}.Str                               if $stgpool{'Pct Logical'};
+            $high-mig-pct                           = Nil;  $high-mig-pct                           = $stgpool{'High Mig Pct'}.Str                              if $stgpool{'High Mig Pct'};
+            $low-mig-pct                            = Nil;  $low-mig-pct                            = $stgpool{'Low Mig Pct'}.Str                               if $stgpool{'Low Mig Pct'};
+            $migration-delay                        = Nil;  $migration-delay                        = $stgpool{'Migration Delay'}.Str                           if $stgpool{'Migration Delay'};
+            $migration-continue                     = Nil;  $migration-continue                     = $stgpool{'Migration Continue'}.Str                        if $stgpool{'Migration Continue'};
+            $migration-processes                    = Nil;  $migration-processes                    = $stgpool{'Migration Processes'}.Str                       if $stgpool{'Migration Processes'};
+            $reclamation-processes                  = Nil;  $reclamation-processes                  = $stgpool{'Reclamation Processes'}.Str                     if $stgpool{'Reclamation Processes'};
+            $next-storage-pool                      = Nil;  $next-storage-pool                      = $stgpool{'Next Storage Pool'}.Str                         if $stgpool{'Next Storage Pool'};
+            $reclaim-storage-pool                   = Nil;  $reclaim-storage-pool                   = $stgpool{'Reclaim Storage Pool'}.Str                      if $stgpool{'Reclaim Storage Pool'};
+            $maximum-size-threshold                 = Nil;  $maximum-size-threshold                 = $stgpool{'Maximum Size Threshold'}.Str                    if $stgpool{'Maximum Size Threshold'};
+            $access                                 = Nil;  $access                                 = $stgpool{'Access'}.Str                                    if $stgpool{'Access'};
+            $description                            = Nil;  $description                            = $stgpool{'Description'}.Str                               if $stgpool{'Description'};
+            $overflow-location                      = Nil;  $overflow-location                      = $stgpool{'Overflow Location'}.Str                         if $stgpool{'Overflow Location'};
+            $cache-migrated-files                   = Nil;  $cache-migrated-files                   = $stgpool{'Cache Migrated Files?'}.Str                     if $stgpool{'Cache Migrated Files?'};
+            $collocate                              = Nil;  $collocate                              = $stgpool{'Collocate?'}.Str                                if $stgpool{'Collocate?'};
+            $reclamation-threshold                  = Nil;  $reclamation-threshold                  = $stgpool{'Reclamation Threshold'}.Str                     if $stgpool{'Reclamation Threshold'};
+            $offsite-reclamation-limit              = Nil;  $offsite-reclamation-limit              = $stgpool{'Offsite Reclamation Limit'}.Str                 if $stgpool{'Offsite Reclamation Limit'};
+            $maximum-scratch-volumes-allowed        = Nil;  $maximum-scratch-volumes-allowed        = $stgpool{'Maximum Scratch Volumes Allowed'}.Str           if $stgpool{'Maximum Scratch Volumes Allowed'};
+            $number-of-scratch-volumes-used         = Nil;  $number-of-scratch-volumes-used         = $stgpool{'Number of Scratch Volumes Used'}.Str            if $stgpool{'Number of Scratch Volumes Used'};
+            $delay-period-for-container-reuse       = Nil;  $delay-period-for-container-reuse       = $stgpool{'Delay Period for Container Reuse'}.Str          if $stgpool{'Delay Period for Container Reuse'};
+            $migration-in-progress                  = Nil;  $migration-in-progress                  = $stgpool{'Migration in Progress?'}.Str                    if $stgpool{'Migration in Progress?'};
+            $amount-migrated-mb                     = Nil;  $amount-migrated-mb                     = $stgpool{'Amount Migrated (MB)'}.Str                      if $stgpool{'Amount Migrated (MB)'};
+            $elapsed-migration-time-seconds         = Nil;  $elapsed-migration-time-seconds         = $stgpool{'Elapsed Migration Time (seconds)'}.Str          if $stgpool{'Elapsed Migration Time (seconds)'};
+            $reclamation-in-progress                = Nil;  $reclamation-in-progress                = $stgpool{'Reclamation in Progress?'}.Str                  if $stgpool{'Reclamation in Progress?'};
+            $last-update-by-administrator           = Nil;  $last-update-by-administrator           = $stgpool{'Last Update by (administrator)'}.Str            if $stgpool{'Last Update by (administrator)'};
+            $last-update-date-time                  = Nil;
+            if $stgpool{'Last Update Date/Time'} {
+                $last-update-date-time              = $stgpool{'Last Update Date/Time'};
+                if $stgpool{'Last Update Date/Time'} ~~ /<date-time-regex>/ {
+                    $last-update-date-time = DateTime.new(
+                                                            :month($<date-time-regex><month>),
+                                                            :day($<date-time-regex><day-of-month>),
+                                                            :year($<date-time-regex><year> < 100 ?? +$<date-time-regex><year> + 2000 !! +$<date-time-regex><year>),
+                                                            :hour($<date-time-regex><hour>),
+                                                            :minute($<date-time-regex><minute>),
+                                                            :second($<date-time-regex><second>),
+                                                         );
+                }
             }
-            $source-objs        = 0;    $source-objs        = $replnode{'Objects on Source Replication Server'}.comb.grep(/\d/).join.Int    if $replnode{'Objects on Source Replication Server'};
+            $storage-pool-data-format               = Nil;  $storage-pool-data-format               = $stgpool{'Storage Pool Data Format'}.Str                  if $stgpool{'Storage Pool Data Format'};
+            $copy-storage-pools                     = Nil;  $copy-storage-pools                     = $stgpool{'Copy Storage Pool(s)'}.Str                      if $stgpool{'Copy Storage Pool(s)'};
+            $active-data-pools                      = Nil;  $active-data-pools                      = $stgpool{'Active Data Pool(s)'}.Str                       if $stgpool{'Active Data Pool(s)'};
+            $continue-copy-on-error                 = Nil;  $continue-copy-on-error                 = $stgpool{'Continue Copy on Error?'}.Str                   if $stgpool{'Continue Copy on Error?'};
+            $crc-data                               = Nil;  $crc-data                               = $stgpool{'CRC Data'}.Str                                  if $stgpool{'CRC Data'};
+            $reclamation-type                       = Nil;  $reclamation-type                       = $stgpool{'Reclamation Type'}.Str                          if $stgpool{'Reclamation Type'};
+            $overwrite-data-when-deleted            = Nil;  $overwrite-data-when-deleted            = $stgpool{'Overwrite Data when Deleted'}.Str               if $stgpool{'Overwrite Data when Deleted'};
+            $compressed                             = Nil;  $compressed                             = $stgpool{'Compressed'}.Str                                if $stgpool{'Compressed'};
+            $compression-savings                    = Nil;  $compression-savings                    = $stgpool{'Compression Savings'}.Str                       if $stgpool{'Compression Savings'};
+            $deduplicate-data                       = Nil;  $deduplicate-data                       = $stgpool{'Deduplicate Data?'}.Str                         if $stgpool{'Deduplicate Data?'};
+            $processes-for-identifying-duplicates   = Nil;  $processes-for-identifying-duplicates   = $stgpool{'Processes For Identifying Duplicates'}.Str      if $stgpool{'Processes For Identifying Duplicates'};
+            $space-used-for-protected-data          = Nil;  $space-used-for-protected-data          = $stgpool{'Space Used for Protected Data'}.Str             if $stgpool{'Space Used for Protected Data'};
+            $total-pending-space                    = Nil;  $total-pending-space                    = $stgpool{'Total Pending Space'}.Str                       if $stgpool{'Total Pending Space'};
+            $deduplication-savings                  = Nil;  $deduplication-savings                  = $stgpool{'Deduplication Savings'}.Str                     if $stgpool{'Deduplication Savings'};
+            $total-space-saved                      = Nil;  $total-space-saved                      = $stgpool{'Total Space Saved'}.Str                         if $stgpool{'Total Space Saved'};
+            $auto-copy-mode                         = Nil;  $auto-copy-mode                         = $stgpool{'Auto-copy Mode'}.Str                            if $stgpool{'Auto-copy Mode'};
+            $contains-data-deduplicated-by-client   = Nil;  $contains-data-deduplicated-by-client   = $stgpool{'Contains Data Deduplicated by Client?'}.Str     if $stgpool{'Contains Data Deduplicated by Client?'};
+            $maximum-simultaneous-writers           = Nil;  $maximum-simultaneous-writers           = $stgpool{'Maximum Simultaneous Writers'}.Str              if $stgpool{'Maximum Simultaneous Writers'};
+            $protect-processes                      = Nil;  $protect-processes                      = $stgpool{'Protect Processes'}.Str                         if $stgpool{'Protect Processes'};
+            $protection-storage-pool                = Nil;  $protection-storage-pool                = $stgpool{'Protection Storage Pool'}.Str                   if $stgpool{'Protection Storage Pool'};
+            $protect-local-storage-pools            = Nil;  $protect-local-storage-pools            = $stgpool{'Protect Local Storage Pool(s)'}.Str             if $stgpool{'Protect Local Storage Pool(s)'};
+            $reclamation-volume-limit               = Nil;  $reclamation-volume-limit               = $stgpool{'Reclamation Volume Limit'}.Str                  if $stgpool{'Reclamation Volume Limit'};
+            $date-of-last-protection-to-remote-pool = Nil;  $date-of-last-protection-to-remote-pool = $stgpool{'Date of Last Protection to Remote Pool'}.Str    if $stgpool{'Date of Last Protection to Remote Pool'};
+            $date-of-last-protection-to-local-pool  = Nul;  $date-of-last-protection-to-local-pool  = $stgpool{'Date of Last Protection to Local Pool'}.Str     if stgpool{'Date of Last Protection to Local Pool'};
+            $deduplicate-requires-backup            = Nil;  $deduplicate-requires-backup            = $stgpool{'Deduplicate Requires Backup?'}.Str              if $stgpool{'Deduplicate Requires Backup?'};
+            $encrypted                              = Nil;  $encrypted                              = $stgpool{'Encrypted'}.Str                                 if $stgpool{'Encrypted'};
+            $pct-encrypted                          = Nil;  $pct-encrypted                          = $stgpool{'Pct Encrypted'}.Str                             if $stgpool{'Pct Encrypted'};
+            $cloud-space-allocated-mb               = Nil;  $cloud-space-allocated-mb               = $stgpool{'Cloud Space Allocated (MB)'}.Str                if $stgpool{'Cloud Space Allocated (MB)'};
+            $cloud-space-utilized-mb                = Nil;  $cloud-space-utilized-mb                = $stgpool{'Cloud Space Utilized (MB)'}.Str                 if $stgpool{'Cloud Space Utilized (MB)'};
+            $local-estimated-capacity               = Nil;  $local-estimated-capacity               = $stgpool{'Local Estimated Capacity'}.Str                  if $stgpool{'Local Estimated Capacity'};
+            $local-pct-util                         = Nil;  $local-pct-util                         = $stgpool{'Local Pct Util'}.Str                            if $stgpool{'Local Pct Util'};
+            $local-pct-logical                      = Nil;  $local-pct-logical                      = $stgpool{'Local Pct Logical'}.Str                         if $stgpool{'Local Pct Logical'};
+            $remove-restored-cpy-before-end-of-life = Nil;  $remove-restored-cpy-before-end-of-life = $stgpool{'Remove Restored Cpy Before End of Life'}.Str    if $stgpool{'Remove Restored Cpy Before End of Life'};
+            $cloud-read-cache                       = Nil;  $cloud-read-cache                       = $stgpool{'Cloud Read Cache'}.Str                          if $stgpool{'Cloud Read Cache'};
+            $cloud-data-locking                     = Nil;  $cloud-data-locking                     = $stgpool{'Cloud Data Locking'}.Str                        if $stgpool{'Cloud Data Locking'};
+            $cloud-data-lock-duration-days          = Nil;  $cloud-data-lock-duration-days          = $stgpool{'Cloud Data Lock Duration (Days)'}.Str           if $stgpool{'Cloud Data Lock Duration (Days)'};
+
+
+#           $source-objs        = 0;    $source-objs        = $replnode{'Objects on Source Replication Server'}.comb.grep(/\d/).join.Int    if $replnode{'Objects on Source Replication Server'};
 
 
             $row                = Array.new;
